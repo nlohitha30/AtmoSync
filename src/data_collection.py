@@ -1,42 +1,39 @@
-
 import requests
 
-# Open-Meteo API URL
-API_URL = "https://api.open-meteo.com/v1/forecast"
-
-# Tirupati location coordinates
-params = {
-    "latitude": 13.6288,
-    "longitude": 79.4192,
-    "current": [
-        "temperature_2m",
-        "relative_humidity_2m"
-    ],
-    "timezone": "auto"
+CITIES = {
+    "Tirupati": (13.6288, 79.4192),
+    "Bengaluru": (12.9716, 77.5946),
+    "Chennai": (13.0827, 80.2707),
+    "Hyderabad": (17.3850, 78.4867)
 }
 
-print("Connecting to Open-Meteo API...")
 
-try:
-    # Send API request
-    response = requests.get(
-        API_URL,
-        params=params,
-        timeout=20
-    )
+def collect_weather_data():
+    weather_data = []
 
-    # Check whether request was successful
-    response.raise_for_status()
+    for city, coordinates in CITIES.items():
+        latitude, longitude = coordinates
 
-    # Convert response into JSON
-    weather_data = response.json()
+        url = "https://api.open-meteo.com/v1/forecast"
 
-    print("\nAPI connection successful!")
-    print("\nComplete API response:")
-    print(weather_data)
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "current": "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m"
+        }
 
-    print("\nAPI response received successfully!")
+        response = requests.get(url, params=params, timeout=20)
+        response.raise_for_status()
 
-except requests.exceptions.RequestException as error:
-    print("API connection failed!")
-    print("Error:", error)
+        data = response.json()
+        current = data["current"]
+
+        weather_data.append({
+            "City": city,
+            "Temperature": current["temperature_2m"],
+            "Humidity": current["relative_humidity_2m"],
+            "Rainfall": current["precipitation"],
+            "Wind Speed": current["wind_speed_10m"]
+        })
+
+    return weather_data

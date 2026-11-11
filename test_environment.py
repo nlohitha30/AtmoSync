@@ -1,16 +1,7 @@
-import requests
-import pandas
-import numpy
-import streamlit
-import plotly
 
-print("AtmoSync Environment Test")
-print("--------------------------")
-print("Requests:", requests.__version__)
-print("Pandas:", pandas.__version__)
-print("NumPy:", numpy.__version__)
-print("Streamlit:", streamlit.__version__)
-print("Plotly:", plotly.__version__)
+from src.data_collection import collect_weather_data
 
-print("--------------------------")
-print("Environment configured successfully!")
+data = collect_weather_data()
+
+for city in data:
+    print(city)
