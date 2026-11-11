@@ -1,4 +1,3 @@
-
 import requests
 
 CITIES = {
@@ -8,12 +7,11 @@ CITIES = {
     "Hyderabad": (17.3850, 78.4867)
 }
 
-def collect_weather_data():
 
+def collect_weather_data():
     weather_data = []
 
     for city, coordinates in CITIES.items():
-
         latitude, longitude = coordinates
 
         url = "https://api.open-meteo.com/v1/forecast"
@@ -24,7 +22,7 @@ def collect_weather_data():
             "current": "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m"
         }
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=20)
         response.raise_for_status()
 
         data = response.json()
