@@ -1,0 +1,11 @@
+
+version: 2
+
+sources:
+  - name: atmosync_raw
+    database: ATMOSYNC_DB
+    schema: RAW_DATA
+    tables:
+      - name: sensor_data
+        identifier: SENSOR_DATA
+        description: "Raw IoT sensor data from AtmoSync containers"

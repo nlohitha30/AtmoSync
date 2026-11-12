@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: atmosync_commodity_raw
+    database: ATMOSYNC_DB
+    schema: RAW_DATA
+    tables:
+      - name: commodity_prices
+        identifier: COMMODITY_PRICES
+        description: "Raw commodity market pricing data"

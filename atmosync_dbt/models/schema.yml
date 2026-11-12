@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_sensor_data
+    description: "Cleaned and validated AtmoSync IoT sensor data"
+
+    columns:
+      - name: CONTAINER_ID
+        description: "Unique identifier of the container"
+        data_tests:
+          - not_null
+
+      - name: COMMODITY
+        description: "Commodity transported by the container"
+        data_tests:
+          - not_null
+
+      - name: TEMPERATURE_C
+        description: "Container temperature in Celsius"
+        data_tests:
+          - not_null
+
+      - name: HUMIDITY_PCT
+        description: "Humidity percentage"
+        data_tests:
+          - not_null
+
+      - name: VIBRATION
+        description: "Container vibration measurement"
+        data_tests:
+          - not_null
+
+      - name: TIMESTAMP
+        description: "Sensor reading timestamp"
+        data_tests:
+          - not_null

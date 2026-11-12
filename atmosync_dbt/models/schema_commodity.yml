@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_commodity_prices
+    description: "Cleaned commodity market pricing data"
+
+    columns:
+      - name: COMMODITY
+        data_tests:
+          - not_null
+
+      - name: MARKET
+        data_tests:
+          - not_null
+
+      - name: PRICE_PER_KG
+        data_tests:
+          - not_null
+
+      - name: CURRENCY
+        data_tests:
+          - not_null
+
+      - name: UNIT
+        data_tests:
+          - not_null
+
+      - name: PRICE_DATE
+        data_tests:
+          - not_null
+
+      - name: DATA_SOURCE
+        data_tests:
+          - not_null
