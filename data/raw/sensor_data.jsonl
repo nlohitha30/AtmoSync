@@ -1,0 +1,7 @@
+{"container_id": "CONT004", "commodity": "Coffee", "temperature_c": 33.63, "humidity_pct": 63.42, "vibration": 4.88, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT001", "commodity": "Rice", "temperature_c": 28.37, "humidity_pct": 52.65, "vibration": 4.51, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT003", "commodity": "Corn", "temperature_c": 32.9, "humidity_pct": 51.82, "vibration": 4.94, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT003", "commodity": "Corn", "temperature_c": 25.41, "humidity_pct": 71.93, "vibration": 1.86, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT002", "commodity": "Wheat", "temperature_c": 27.25, "humidity_pct": 64.07, "vibration": 4.67, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT003", "commodity": "Corn", "temperature_c": 29.64, "humidity_pct": 52.42, "vibration": 2.99, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
+{"container_id": "CONT002", "commodity": "Wheat", "temperature_c": 28.89, "humidity_pct": 41.32, "vibration": 4.05, "timestamp": "2026-11-11T15:11:50.655774+00:00"}
