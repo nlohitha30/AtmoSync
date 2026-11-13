@@ -1,11 +1,11 @@
-
+import os
 import json
 import time
 from kafka import KafkaProducer
 from iot_sensor_simulator import generate_sensor_data
 
 # Kafka broker address
-KAFKA_SERVER = "localhost:9092"
+KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
 
 # Kafka topic
 KAFKA_TOPIC = "atmosync-sensor-data"
