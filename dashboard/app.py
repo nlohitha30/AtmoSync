@@ -207,7 +207,7 @@ try:
     st.subheader("Vibration Monitoring")
     st.bar_chart(container_data["VIBRATION"])
 
-    # Container details
+        # Container details
     st.subheader("Container Sensor Details")
 
     display_data = sensor_data.rename(columns={
@@ -219,6 +219,7 @@ try:
         "SENSOR_TIMESTAMP": "Timestamp"
     })
 
+    st.dataframe(display_data, use_container_width=True)
     # Commodity Price Analytics
     st.divider()
     st.header("Commodity Price Analytics")
