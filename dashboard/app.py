@@ -14,6 +14,36 @@ from src.snowflake_connection import create_snowflake_connection
 from src.arbitrage_calculator import calculate_arbitrage
 from src.net_profit_calculator import calculate_net_profit
 
+
+@st.cache_data(ttl=300)
+def calculate_risk_data(sensor_data):
+
+    risk_results = sensor_data.apply(
+        lambda row: calculate_spoilage_risk(
+            temperature=float(row["TEMPERATURE_C"]),
+            humidity=float(row["HUMIDITY_PCT"]),
+            vibration=float(row["VIBRATION"])
+        ),
+        axis=1
+    )
+
+    result = sensor_data.copy()
+
+    result["RISK_SCORE"] = risk_results.apply(
+        lambda item: item["risk_score"]
+    )
+
+    result["RISK_LEVEL"] = risk_results.apply(
+        lambda item: item["risk_level"]
+    )
+
+    result["RISK_FACTORS"] = risk_results.apply(
+        lambda item: ", ".join(item["risk_factors"])
+        if item["risk_factors"] else "No elevated risk factors"
+    )
+
+    return result
+
 # Page configuration
 st.set_page_config(
     page_title="AtmoSync Dashboard",
@@ -21,8 +51,16 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("AtmoSync - Micro-Climate Arbitrage Analytics")
-st.markdown("### Live IoT Sensor Monitoring Dashboard")
+st.title("🌦️ AtmoSync - Micro-Climate Arbitrage Analytics")
+
+st.markdown(
+    "### Real-Time IoT Sensor Monitoring & Commodity Analytics"
+)
+
+st.caption(
+    "Monitor container conditions, spoilage risks "
+    "and commodity market opportunities."
+)
 st.divider()
 
 # Sidebar
@@ -32,7 +70,7 @@ st.sidebar.write("Sensor Monitoring")
 st.sidebar.write("Commodity Analytics")
 
 # Load sensor data from Snowflake
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def load_sensor_data():
     connection = create_snowflake_connection()
     cursor = connection.cursor()
@@ -61,7 +99,7 @@ def load_sensor_data():
         cursor.close()
         connection.close()
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def load_commodity_data():
     connection = create_snowflake_connection()
     cursor = connection.cursor()
@@ -120,31 +158,11 @@ try:
 
     st.divider()
 
-    # Spoilage Risk Monitoring
+# Spoilage Risk Monitoring
     st.divider()
     st.header("Spoilage Risk Monitoring")
 
-    risk_results = sensor_data.apply(
-        lambda row: calculate_spoilage_risk(
-            temperature=float(row["TEMPERATURE_C"]),
-            humidity=float(row["HUMIDITY_PCT"]),
-            vibration=float(row["VIBRATION"])
-        ),
-        axis=1
-    )
-
-    sensor_data["RISK_SCORE"] = risk_results.apply(
-        lambda result: result["risk_score"]
-    )
-
-    sensor_data["RISK_LEVEL"] = risk_results.apply(
-        lambda result: result["risk_level"]
-    )
-
-    sensor_data["RISK_FACTORS"] = risk_results.apply(
-        lambda result: ", ".join(result["risk_factors"])
-        if result["risk_factors"] else "No elevated risk factors"
-    )
+    sensor_data = calculate_risk_data(sensor_data)
 
     # Risk summary
     risk_counts = (
