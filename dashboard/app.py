@@ -1,8 +1,32 @@
 
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import os
 import sys
+
+# Dashboard folder path
+DASHBOARD_DIR = Path(__file__).parent
+
+# Load CSS
+def load_css():
+    css_file = DASHBOARD_DIR / "style.css"
+    with open(css_file, encoding="utf-8") as file:
+        st.markdown(
+            f"<style>{file.read()}</style>",
+            unsafe_allow_html=True
+        )
+
+# Load HTML header
+def load_header():
+    html_file = DASHBOARD_DIR / "header.html"
+
+    with open(html_file, "r", encoding="utf-8") as file:
+        header_html = file.read()
+
+    st.html(header_html)
+
+
 
 # Add project root to Python path
 PROJECT_ROOT = os.path.abspath(
@@ -63,12 +87,19 @@ st.caption(
 )
 st.divider()
 
-# Sidebar
-st.sidebar.title("AtmoSync Navigation")
-st.sidebar.write("Dashboard Overview")
-st.sidebar.write("Sensor Monitoring")
-st.sidebar.write("Commodity Analytics")
+# Sidebar Navigation
+st.sidebar.title("🌦️ AtmoSync Navigation")
 
+selected_page = st.sidebar.radio(
+    "Navigate",
+    [
+        "Dashboard Overview",
+        "Sensor Monitoring",
+        "Commodity Analytics"
+    ]
+)
+load_css()
+load_header()
 # Load sensor data from Snowflake
 @st.cache_data(ttl=300)
 def load_sensor_data():
@@ -138,271 +169,273 @@ try:
         st.warning("No sensor records found in Snowflake.")
         st.stop()
 
-    # KPI Cards
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric(
-        "Total Sensor Records",
-        len(sensor_data)
-    )
-
-    col2.metric(
-        "Average Temperature",
-        f"{sensor_data['TEMPERATURE_C'].mean():.2f} °C"
-    )
-
-    col3.metric(
-        "Average Humidity",
-        f"{sensor_data['HUMIDITY_PCT'].mean():.2f} %"
-    )
-
-    st.divider()
-
-# Spoilage Risk Monitoring
-    st.divider()
-    st.header("Spoilage Risk Monitoring")
-
-    sensor_data = calculate_risk_data(sensor_data)
-
-    # Risk summary
-    risk_counts = (
-        sensor_data["RISK_LEVEL"]
-        .value_counts()
-        .reindex(["LOW", "MEDIUM", "HIGH"], fill_value=0)
-    )
-
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Low Risk Records", int(risk_counts["LOW"]))
-    col2.metric("Medium Risk Records", int(risk_counts["MEDIUM"]))
-    col3.metric("High Risk Records", int(risk_counts["HIGH"]))
-
-    st.subheader("Container-wise Spoilage Risk")
-    st.bar_chart(
-        sensor_data.groupby("CONTAINER_ID")["RISK_SCORE"].mean()
-    )
-
-    st.subheader("Sensor Spoilage Risk Details")
-
-    st.dataframe(
-        sensor_data[
-            [
-                "CONTAINER_ID",
-                "COMMODITY",
-                "TEMPERATURE_C",
-                "HUMIDITY_PCT",
-                "VIBRATION",
-                "RISK_SCORE",
-                "RISK_LEVEL",
-                "RISK_FACTORS"
-            ]
-        ],
-        use_container_width=True
-    )
-
-    st.caption(
-        "Note: Risk scores use prototype thresholds "
-        "and are not scientifically validated predictions."
-    )
-
-    
-    # Container-wise sensor analytics
-    container_data = sensor_data.groupby("CONTAINER_ID").agg({
-        "TEMPERATURE_C": "mean",
-        "HUMIDITY_PCT": "mean",
-        "VIBRATION": "mean"
-    }).round(2)
-
-    # Temperature chart
-    st.subheader("Temperature Monitoring")
-    st.bar_chart(container_data["TEMPERATURE_C"])
-
-    # Humidity chart
-    st.subheader("Humidity Monitoring")
-    st.bar_chart(container_data["HUMIDITY_PCT"])
-
-    # Vibration chart
-    st.subheader("Vibration Monitoring")
-    st.bar_chart(container_data["VIBRATION"])
-
-        # Container details
-    st.subheader("Container Sensor Details")
-
-    display_data = sensor_data.rename(columns={
-        "CONTAINER_ID": "Container",
-        "COMMODITY": "Commodity",
-        "TEMPERATURE_C": "Temperature (°C)",
-        "HUMIDITY_PCT": "Humidity (%)",
-        "VIBRATION": "Vibration",
-        "SENSOR_TIMESTAMP": "Timestamp"
-    })
-
-    st.dataframe(display_data, use_container_width=True)
-    # Commodity Price Analytics
-    st.divider()
-    st.header("Commodity Price Analytics")
-
-    commodity_data = load_commodity_data()
-
-    if not commodity_data.empty:
-
-        # Highest and lowest price
-        highest_price = commodity_data.loc[
-            commodity_data["PRICE_PER_KG"].idxmax()
-        ]
-
-        lowest_price = commodity_data.loc[
-            commodity_data["PRICE_PER_KG"].idxmin()
-        ]
-
-        col1, col2 = st.columns(2)
+    if selected_page == "Dashboard Overview":
+        # KPI Cards
+        col1, col2, col3 = st.columns(3)
 
         col1.metric(
-            "Highest Commodity Price",
-            f"₹{highest_price['PRICE_PER_KG']:.2f}/kg",
-            f"{highest_price['COMMODITY']} - {highest_price['MARKET']}"
+            "Total Sensor Records",
+            len(sensor_data)
         )
 
         col2.metric(
-            "Lowest Commodity Price",
-            f"₹{lowest_price['PRICE_PER_KG']:.2f}/kg",
-            f"{lowest_price['COMMODITY']} - {lowest_price['MARKET']}"
+            "Average Temperature",
+            f"{sensor_data['TEMPERATURE_C'].mean():.2f} °C"
         )
 
-        # Market-wise price comparison
-        st.subheader("Market-wise Commodity Price Comparison")
-
-        price_comparison = commodity_data.pivot_table(
-    index="COMMODITY",
-    columns="MARKET",
-    values="PRICE_PER_KG",
-    aggfunc="mean"
-)
-
-        st.bar_chart(price_comparison)
-
-        
-        # Arbitrage Opportunity Analysis
-        st.subheader("Arbitrage Opportunity Detection")
-
-        arbitrage_data = commodity_data.pivot_table(
-            index="COMMODITY",
-            columns="MARKET",
-            values="PRICE_PER_KG",
-            aggfunc="mean"
+        col3.metric(
+            "Average Humidity",
+            f"{sensor_data['HUMIDITY_PCT'].mean():.2f} %"
         )
 
-        # Identify available market prices
-        market_columns = list(arbitrage_data.columns)
+        st.divider()
+    elif selected_page == "Sensor Monitoring":
+    # Spoilage Risk Monitoring
+        st.divider()
+        st.header("Spoilage Risk Monitoring")
 
-        if len(market_columns) >= 2:
+        sensor_data = calculate_risk_data(sensor_data)
 
-            arbitrage_data["Lowest Market"] = (
-                arbitrage_data[market_columns].idxmin(axis=1)
-            )
-
-            arbitrage_data["Highest Market"] = (
-                arbitrage_data[market_columns].idxmax(axis=1)
-            )
-
-            arbitrage_data["Price Difference"] = (
-                arbitrage_data[market_columns].max(axis=1)
-                - arbitrage_data[market_columns].min(axis=1)
-            ).round(2)
-
-            arbitrage_data["Price Difference (%)"] = (
-                arbitrage_data["Price Difference"]
-                / arbitrage_data[market_columns].min(axis=1)
-                * 100
-            ).round(2)
-
-            st.dataframe(
-                arbitrage_data,
-                use_container_width=True
-            )
-
-            st.bar_chart(
-                arbitrage_data["Price Difference"]
-            )
-
-        else:
-            st.warning("At least two markets are required.")
-        
-    # Net Profit Analysis
-    st.divider()
-    st.header("Net Profit & Rerouting Analysis")
-
-    profit_opportunities = calculate_arbitrage(commodity_data)
-
-    if not profit_opportunities.empty:
-        st.subheader("Select Commodity")
-
-        selected_commodity = st.selectbox(
-            "Choose commodity",
-            profit_opportunities["COMMODITY"].tolist()
-        )
-
-        selected_row = profit_opportunities[
-            profit_opportunities["COMMODITY"] == selected_commodity
-        ].iloc[0]
-
-        st.write(
-            f"Buy from: **{selected_row['BUY_MARKET']}** "
-            f"at ₹{selected_row['BUY_PRICE']:.2f}/kg"
-        )
-
-        st.write(
-            f"Sell at: **{selected_row['SELL_MARKET']}** "
-            f"at ₹{selected_row['SELL_PRICE']:.2f}/kg"
+        # Risk summary
+        risk_counts = (
+            sensor_data["RISK_LEVEL"]
+            .value_counts()
+            .reindex(["LOW", "MEDIUM", "HIGH"], fill_value=0)
         )
 
         col1, col2, col3 = st.columns(3)
 
-        with col1:
-            transport_cost = st.number_input(
-                "Transport cost (₹/kg)",
-                min_value=0.0,
-                value=0.40,
-                step=0.10
-            )
+        col1.metric("Low Risk Records", int(risk_counts["LOW"]))
+        col2.metric("Medium Risk Records", int(risk_counts["MEDIUM"]))
+        col3.metric("High Risk Records", int(risk_counts["HIGH"]))
 
-        with col2:
-            storage_cost = st.number_input(
-                "Storage cost (₹/kg)",
-                min_value=0.0,
-                value=0.20,
-                step=0.10
-            )
-
-        with col3:
-            spoilage_percentage = st.number_input(
-                "Estimated spoilage (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=1.0,
-                step=0.5
-            )
-
-        result = calculate_net_profit(
-            buy_price=float(selected_row["BUY_PRICE"]),
-            sell_price=float(selected_row["SELL_PRICE"]),
-            transport_cost=transport_cost,
-            storage_cost=storage_cost,
-            spoilage_percentage=spoilage_percentage
+        st.subheader("Container-wise Spoilage Risk")
+        st.bar_chart(
+            sensor_data.groupby("CONTAINER_ID")["RISK_SCORE"].mean()
         )
 
-        st.metric(
-            "Net Profit per KG",
-            f"₹{result['net_profit_per_kg']:.2f}"
+        st.subheader("Sensor Spoilage Risk Details")
+
+        st.dataframe(
+            sensor_data[
+                [
+                    "CONTAINER_ID",
+                    "COMMODITY",
+                    "TEMPERATURE_C",
+                    "HUMIDITY_PCT",
+                    "VIBRATION",
+                    "RISK_SCORE",
+                    "RISK_LEVEL",
+                    "RISK_FACTORS"
+                ]
+            ],
+            use_container_width=True
         )
 
-        if result["recommendation"] == "PROFITABLE":
-            st.success("Potentially Profitable Opportunity")
+        st.caption(
+            "Note: Risk scores use prototype thresholds "
+            "and are not scientifically validated predictions."
+        )
+
+    
+        # Container-wise sensor analytics
+        container_data = sensor_data.groupby("CONTAINER_ID").agg({
+            "TEMPERATURE_C": "mean",
+            "HUMIDITY_PCT": "mean",
+            "VIBRATION": "mean"
+        }).round(2)
+
+        # Temperature chart
+        st.subheader("Temperature Monitoring")
+        st.bar_chart(container_data["TEMPERATURE_C"])
+
+        # Humidity chart
+        st.subheader("Humidity Monitoring")
+        st.bar_chart(container_data["HUMIDITY_PCT"])
+
+        # Vibration chart
+        st.subheader("Vibration Monitoring")
+        st.bar_chart(container_data["VIBRATION"])
+
+            # Container details
+        st.subheader("Container Sensor Details")
+
+        display_data = sensor_data.rename(columns={
+            "CONTAINER_ID": "Container",
+            "COMMODITY": "Commodity",
+            "TEMPERATURE_C": "Temperature (°C)",
+            "HUMIDITY_PCT": "Humidity (%)",
+            "VIBRATION": "Vibration",
+            "SENSOR_TIMESTAMP": "Timestamp"
+        })
+
+        st.dataframe(display_data, use_container_width=True)
+    elif selected_page == "Commodity Analytics":
+        # Commodity Price Analytics
+        st.divider()
+        st.header("Commodity Price Analytics")
+
+        commodity_data = load_commodity_data()
+
+        if not commodity_data.empty:
+
+            # Highest and lowest price
+            highest_price = commodity_data.loc[
+                commodity_data["PRICE_PER_KG"].idxmax()
+            ]
+
+            lowest_price = commodity_data.loc[
+                commodity_data["PRICE_PER_KG"].idxmin()
+            ]
+
+            col1, col2 = st.columns(2)
+
+            col1.metric(
+                "Highest Commodity Price",
+                f"₹{highest_price['PRICE_PER_KG']:.2f}/kg",
+                f"{highest_price['COMMODITY']} - {highest_price['MARKET']}"
+            )
+
+            col2.metric(
+                "Lowest Commodity Price",
+                f"₹{lowest_price['PRICE_PER_KG']:.2f}/kg",
+                f"{lowest_price['COMMODITY']} - {lowest_price['MARKET']}"
+            )
+
+            # Market-wise price comparison
+            st.subheader("Market-wise Commodity Price Comparison")
+
+            price_comparison = commodity_data.pivot_table(
+        index="COMMODITY",
+        columns="MARKET",
+        values="PRICE_PER_KG",
+        aggfunc="mean"
+    )
+
+            st.bar_chart(price_comparison)
+
+        
+            # Arbitrage Opportunity Analysis
+            st.subheader("Arbitrage Opportunity Detection")
+
+            arbitrage_data = commodity_data.pivot_table(
+                index="COMMODITY",
+                columns="MARKET",
+                values="PRICE_PER_KG",
+                aggfunc="mean"
+            )
+
+            # Identify available market prices
+            market_columns = list(arbitrage_data.columns)
+
+            if len(market_columns) >= 2:
+
+                arbitrage_data["Lowest Market"] = (
+                    arbitrage_data[market_columns].idxmin(axis=1)
+                )
+
+                arbitrage_data["Highest Market"] = (
+                    arbitrage_data[market_columns].idxmax(axis=1)
+                )
+
+                arbitrage_data["Price Difference"] = (
+                    arbitrage_data[market_columns].max(axis=1)
+                    - arbitrage_data[market_columns].min(axis=1)
+                ).round(2)
+
+                arbitrage_data["Price Difference (%)"] = (
+                    arbitrage_data["Price Difference"]
+                    / arbitrage_data[market_columns].min(axis=1)
+                    * 100
+                ).round(2)
+
+                st.dataframe(
+                    arbitrage_data,
+                    use_container_width=True
+                )
+
+                st.bar_chart(
+                    arbitrage_data["Price Difference"]
+                )
+
+            else:
+                st.warning("At least two markets are required.")
+        
+        # Net Profit Analysis
+        st.divider()
+        st.header("Net Profit & Rerouting Analysis")
+
+        profit_opportunities = calculate_arbitrage(commodity_data)
+
+        if not profit_opportunities.empty:
+            st.subheader("Select Commodity")
+
+            selected_commodity = st.selectbox(
+                "Choose commodity",
+                profit_opportunities["COMMODITY"].tolist()
+            )
+
+            selected_row = profit_opportunities[
+                profit_opportunities["COMMODITY"] == selected_commodity
+            ].iloc[0]
+
+            st.write(
+                f"Buy from: **{selected_row['BUY_MARKET']}** "
+                f"at ₹{selected_row['BUY_PRICE']:.2f}/kg"
+            )
+
+            st.write(
+                f"Sell at: **{selected_row['SELL_MARKET']}** "
+                f"at ₹{selected_row['SELL_PRICE']:.2f}/kg"
+            )
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                transport_cost = st.number_input(
+                    "Transport cost (₹/kg)",
+                    min_value=0.0,
+                    value=0.40,
+                    step=0.10
+                )
+
+            with col2:
+                storage_cost = st.number_input(
+                    "Storage cost (₹/kg)",
+                    min_value=0.0,
+                    value=0.20,
+                    step=0.10
+                )
+
+            with col3:
+                spoilage_percentage = st.number_input(
+                    "Estimated spoilage (%)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=1.0,
+                    step=0.5
+                )
+
+            result = calculate_net_profit(
+                buy_price=float(selected_row["BUY_PRICE"]),
+                sell_price=float(selected_row["SELL_PRICE"]),
+                transport_cost=transport_cost,
+                storage_cost=storage_cost,
+                spoilage_percentage=spoilage_percentage
+            )
+
+            st.metric(
+                "Net Profit per KG",
+                f"₹{result['net_profit_per_kg']:.2f}"
+            )
+
+            if result["recommendation"] == "PROFITABLE":
+                st.success("Potentially Profitable Opportunity")
+            else:
+                st.warning("Not Profitable with Current Cost Assumptions")
+
         else:
-            st.warning("Not Profitable with Current Cost Assumptions")
-
-    else:
-        st.warning("No arbitrage opportunities available.")
+            st.warning("No arbitrage opportunities available.")
 
 
     st.caption("AtmoSync | Snowflake Connected Dashboard")
