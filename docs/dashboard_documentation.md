@@ -1,4 +1,4 @@
-# AtmoSync – Micro-Climate Arbitrage Analytics
+# AtmoSync â€“ Micro-Climate Arbitrage Analytics
 
 ## 1. Project Overview
 
@@ -159,3 +159,22 @@ Current dbt test suite: **13 tests passed**.
 AtmoSync combines IoT sensor monitoring, cloud data warehousing, data transformation, and commodity price analytics into one dashboard.
 
 The current implementation provides a working prototype for environmental monitoring, risk assessment, and commodity arbitrage analysis. Further development will focus on automated real-time data integration and intelligent rerouting recommendations.
+
+## 11. Recent Dashboard UI Improvements
+
+The Streamlit dashboard has been improved with sidebar navigation and a structured user interface.
+
+### Dashboard Navigation
+
+The dashboard contains three navigation sections:
+
+- Dashboard Overview: Displays key project metrics, including total sensor records, average temperature, and average humidity.
+- Sensor Monitoring: Displays sensor readings, temperature, humidity, vibration charts, and spoilage risk information.
+- Commodity Analytics: Displays commodity price comparisons, arbitrage opportunities, and net profit analysis.
+
+### UI Improvements
+
+- Added a separate HTML file for the dashboard header.
+- Improved the dashboard appearance with custom styling.
+- Organized dashboard features into separate navigation sections.
+- Preserved the existing analytics calculations and Snowflake functions.
