@@ -74,13 +74,17 @@ Commodity analytics tests: 11
 
 Sensor validation tests: 3
 
-Total tests passed: 14
+Total tests passed: 14,.
 
 Test command:
 
-python -m unittest discover -s tests -v
+python -m pytest -v
 
-Result: All 9 tests passed.
+
+
+Test result:
+
+14 passed
 
 ## 8\. Conclusion
 
