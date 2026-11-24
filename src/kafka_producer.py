@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 from iot_sensor_simulator import generate_sensor_data
 
 # Kafka broker address
-KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
+KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9094")
 
 # Kafka topic
 KAFKA_TOPIC = "atmosync-sensor-data"
@@ -52,4 +52,5 @@ if __name__ == "__main__":
     finally:
         producer.flush()
         producer.close()
+
 

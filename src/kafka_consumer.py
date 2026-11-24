@@ -3,7 +3,7 @@ import os
 import json
 from kafka import KafkaConsumer
 
-KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
+KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9094")
 KAFKA_TOPIC = "atmosync-sensor-data"
 
 
@@ -34,3 +34,4 @@ if __name__ == "__main__":
 
     finally:
         consumer.close()
+
