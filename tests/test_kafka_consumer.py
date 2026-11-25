@@ -2,7 +2,13 @@
 import unittest
 from unittest.mock import patch
 
-from src.kafka_consumer import deserialize_sensor_message
+from kafka.structs import TopicPartition, OffsetAndMetadata
+
+from src.kafka_consumer import (
+    deserialize_sensor_message,
+    create_consumer,
+    commit_processed_message
+)
 
 
 class TestKafkaConsumer(unittest.TestCase):
@@ -78,6 +84,36 @@ class TestKafkaConsumer(unittest.TestCase):
 
         self.assertIsNone(result)
         mock_print.assert_called_once()
+
+    @patch("src.kafka_consumer.KafkaConsumer")
+    def test_consumer_uses_manual_offset_commits(self, mock_kafka):
+        create_consumer()
+
+        mock_kafka.assert_called_once_with(
+            "atmosync-sensor-data",
+            bootstrap_servers=["localhost:9094"],
+            auto_offset_reset="earliest",
+            enable_auto_commit=False,
+            group_id="atmosync-consumer-group",
+            value_deserializer=deserialize_sensor_message
+        )
+
+    def test_processed_message_commits_next_offset(self):
+        mock_consumer = unittest.mock.MagicMock()
+
+        mock_message = unittest.mock.MagicMock()
+        mock_message.topic = "atmosync-sensor-data"
+        mock_message.partition = 0
+        mock_message.offset = 10
+
+        commit_processed_message(mock_consumer, mock_message)
+
+        expected = {
+            TopicPartition("atmosync-sensor-data", 0):
+                OffsetAndMetadata(11, "")
+        }
+
+        mock_consumer.commit.assert_called_once_with(expected)
 
 
 if __name__ == "__main__":
