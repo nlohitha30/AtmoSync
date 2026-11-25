@@ -74,7 +74,7 @@ Commodity analytics tests: 11
 
 Sensor validation tests: 3
 
-Total tests passed: 14,.
+Total tests passed: 14
 
 Test command:
 
