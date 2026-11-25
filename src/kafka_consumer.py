@@ -7,6 +7,16 @@ KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9094")
 KAFKA_TOPIC = "atmosync-sensor-data"
 
 
+def deserialize_sensor_message(message):
+    """Safely deserialize a Kafka sensor message."""
+    try:
+        return json.loads(message.decode("utf-8"))
+
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        print(f"Rejected invalid Kafka message: {error}")
+        return None
+
+
 def create_consumer():
     consumer = KafkaConsumer(
         KAFKA_TOPIC,
@@ -14,7 +24,7 @@ def create_consumer():
         auto_offset_reset="earliest",
         enable_auto_commit=True,
         group_id="atmosync-consumer-group",
-        value_deserializer=lambda message: json.loads(message.decode("utf-8"))
+        value_deserializer=deserialize_sensor_message
     )
     return consumer
 
@@ -26,6 +36,9 @@ if __name__ == "__main__":
 
     try:
         for message in consumer:
+            if message.value is None:
+                continue
+
             print("\nSensor Data Received:")
             print(json.dumps(message.value, indent=4))
 
@@ -34,4 +47,3 @@ if __name__ == "__main__":
 
     finally:
         consumer.close()
-
