@@ -239,4 +239,28 @@ The project has progressed beyond initial setup and includes:
 
 - Weather data collection using Open-Meteo.
 - IoT sensor data simulation and validation.
-- Kafka producer
+- Kafka producer and consumer integration using Apache Kafka.
+- Sensor message validation before database insertion.
+- Validated Kafka sensor records stored in Snowflake.
+- Manual Kafka offset commits after successful processing.
+- dbt transformations and data quality testing.
+- Commodity price analytics and arbitrage calculations.
+- Prototype spoilage risk monitoring.
+- Interactive Streamlit analytics dashboard.
+
+### Kafka-to-Snowflake Processing Flow
+
+1. The Kafka producer publishes sensor messages to the `atmosync-sensor-data` topic.
+2. The Kafka consumer receives incoming messages.
+3. Sensor records are validated before processing.
+4. Valid records are inserted into the `ATMOSYNC_DB.RAW_DATA.SENSOR_DATA` table.
+5. Kafka offsets are committed after successful processing.
+6. If Snowflake insertion fails, the offset is not committed.
+7. Invalid sensor messages are rejected.
+
+**Integration verification:** A sample sensor record was successfully processed and verified in Snowflake.
+
+**Test command:**
+
+```powershell
+python -m pytest -v
