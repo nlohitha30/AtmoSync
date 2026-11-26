@@ -96,3 +96,38 @@ Result: Successfully received and displayed sensor messages.
 ## 10. Important Configuration Note
 
 The existing Kafka broker advertises `kafka:9092`, which is accessible from containers
+
+
+## 11. Kafka-to-Snowflake Integration
+
+The Kafka consumer is integrated with Snowflake to store validated IoT sensor records.
+
+### Processing Workflow
+
+1. The consumer receives messages from `atmosync-sensor-data`.
+2. Incoming JSON messages are deserialized.
+3. Sensor records are validated using the sensor data validator.
+4. Invalid messages are rejected.
+5. Valid records are inserted into `ATMOSYNC_DB.RAW_DATA.SENSOR_DATA`.
+6. Kafka offsets are committed only after successful Snowflake insertion.
+7. If database insertion fails, the transaction is rolled back and the Kafka offset is not committed.
+
+### Snowflake Transaction Handling
+
+- Successful insertion: Database transaction committed.
+- Failed insertion: Database transaction rolled back.
+- Cursor and database connection: Closed after processing.
+
+## 12. Integration Test Results
+
+Test command:
+
+```powershell
+python -m pytest .\tests\test_kafka_consumer.py .\tests\test_kafka_to_snowflake.py -v
+```
+
+**Result:** 11 passed, 218 warnings in 10.16 seconds.
+
+All 11 targeted Kafka consumer and Snowflake integration tests passed.
+
+The warnings are dependency deprecation warnings and did not cause test failures.
